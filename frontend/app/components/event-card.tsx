@@ -1,39 +1,25 @@
 "use client";
 
+import { eventsApi } from "@/lib/api/events";
+import { EventItem } from "@/lib/types";
 import { useState } from "react";
-
-export type EventItem = {
-  id: number;
-  name: string;
-  event_date: string;
-  registration_count: number;
-};
 
 export default function EventCard({ event }: { event: EventItem }) {
   const [loading, setLoading] = useState<"register" | "cancel" | null>(null);
   const [count, setCount] = useState(event.registration_count);
+  const [error, setError] = useState<string | null>(null);
 
   const handleCount = async (action: "register" | "cancel") => {
     setLoading(action);
-    // Simulate API call
+    setError(null);
+
     try {
-      console.log("Fetching events from API...");
-      const res = await fetch(
-        `http://127.0.0.1:8000/api/events/${event.id}/${action}`,
-        {
-          method: "POST",
-        },
-      );
+      const updated = await eventsApi.eventAction(event.id, action);
 
-      if (!res.ok) {
-        throw new Error(`Failed to fetch events: ${res.status}`);
-      }
-
-      console.log("Events fetched successfully.", res);
-      const json = await res.json();
-      setCount(json.data.registration_count);
-    } catch (error) {
-      console.error(`Error ${action} for event:`, error);
+      setCount(updated.registration_count);
+    } catch (err) {
+      console.error(`Error ${action} for event:`, err);
+      setError(`Couldn't ${action} — please try again.`);
     } finally {
       setLoading(null);
     }
@@ -60,6 +46,8 @@ export default function EventCard({ event }: { event: EventItem }) {
           Cancel
         </button>
       </div>
+
+      {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
     </div>
   );
 }

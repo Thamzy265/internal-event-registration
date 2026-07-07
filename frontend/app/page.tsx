@@ -1,22 +1,8 @@
-import EventCard, { EventItem } from "./components/event-card";
-
-async function getEvents(): Promise<EventItem[]> {
-  console.log("Fetching events from API...");
-  const res = await fetch("http://127.0.0.1:8000/api/events", {
-    cache: "no-store",
-  });
-
-  if (!res.ok) {
-    throw new Error(`Failed to fetch events: ${res.status}`);
-  }
-
-  console.log("Events fetched successfully.", res);
-  const json = await res.json();
-  return json.data;
-}
+import EventCard from "./components/event-card";
+import { eventsApi } from "@/lib/api/events";
 
 export default async function Home() {
-  const events = await getEvents();
+  const events = await eventsApi.fetchEvents();
 
   return (
     <div className=" min-h-screen m-16">
