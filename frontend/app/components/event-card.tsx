@@ -13,13 +13,13 @@ export default function EventCard({ event }: { event: EventItem }) {
   const [loading, setLoading] = useState<"register" | "cancel" | null>(null);
   const [count, setCount] = useState(event.registration_count);
 
-  const handleRegister = async () => {
-    setLoading("register");
+  const handleCount = async (action: "register" | "cancel") => {
+    setLoading(action);
     // Simulate API call
     try {
       console.log("Fetching events from API...");
       const res = await fetch(
-        `http://127.0.0.1:8000/api/events/${event.id}/register`,
+        `http://127.0.0.1:8000/api/events/${event.id}/${action}`,
         {
           method: "POST",
         },
@@ -33,17 +33,10 @@ export default function EventCard({ event }: { event: EventItem }) {
       const json = await res.json();
       setCount(json.data.registration_count);
     } catch (error) {
-      console.error("Error registering for event:", error);
+      console.error(`Error ${action} for event:`, error);
     } finally {
       setLoading(null);
     }
-  };
-
-  const handleCancel = async () => {
-    setLoading("cancel");
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setLoading(null);
   };
 
   return (
@@ -53,18 +46,18 @@ export default function EventCard({ event }: { event: EventItem }) {
       <p className="text-zinc-600">Registrations: {count}</p>
       <div className="mt-2 flex gap-2">
         <button
-          onClick={handleRegister}
+          onClick={() => handleCount("register")}
           disabled={loading !== null}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50 cursor-pointer"
         >
-          {loading === "register" ? "Registering..." : "Register"}
+          Register
         </button>
         <button
-          onClick={handleCancel}
-          disabled={loading !== null}
-          className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 disabled:opacity-50"
+          onClick={() => handleCount("cancel")}
+          disabled={loading !== null || count <= 0}
+          className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 disabled:opacity-50 cursor-pointer"
         >
-          {loading === "cancel" ? "Canceling..." : "Cancel"}
+          Cancel
         </button>
       </div>
     </div>
