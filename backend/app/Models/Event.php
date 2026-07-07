@@ -13,7 +13,9 @@ class Event extends Model
 
     protected $fillable = ['name', 'event_date', 'registration_count'];
 
-    protected $casts = ['event_date' => 'date'];
+    protected $casts = [
+        'event_date' => 'date:Y-m-d',
+    ];
 
     protected $hidden = ['created_at', 'updated_at'];
 }
