@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\EventRequest;
 use App\Models\Event;
 use App\Traits\ApiResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class EventController extends Controller
@@ -24,12 +24,9 @@ class EventController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(EventRequest $request)
     {
-        $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
-            'event_date' => 'required|date',
-        ]);
+        $validatedData = $request->validated();
 
         return $this->success(Event::create($validatedData), 'Event created successfully', 201);
 
@@ -52,14 +49,11 @@ class EventController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(EventRequest $request, string $id)
     {
         $event = Event::findOrFail($id);
 
-        $validatedData = $request->validate([
-            'name' => 'string|max:255',
-            'event_date' => 'date',
-        ]);
+        $validatedData = $request->validated();
 
         $event->update($validatedData);
 
