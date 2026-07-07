@@ -4,21 +4,21 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Event;
+use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class EventController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
         // return response()->json(Event::orderBy('date')->get());
-        return response()->json([
-            'message' => 'Event list retrieved successfully',
-            'data' => Event::orderBy('event_date')->get(),
-        ]);
+        return $this->success(Event::orderBy('event_date')->get(), 'Event list retrieved successfully');
     }
 
     /**
@@ -31,7 +31,7 @@ class EventController extends Controller
             'event_date' => 'required|date',
         ]);
 
-        return response()->json(Event::create($validatedData), 201);
+        return $this->success(Event::create($validatedData), 'Event created successfully', 201);
 
     }
 
@@ -40,7 +40,13 @@ class EventController extends Controller
      */
     public function show(string $id)
     {
-        return Event::findOrFail($id);
+        $event = Event::find($id);
+
+        if (! $event) {
+            return $this->error('Event not found', 404);
+        }
+
+        return $this->success($event, 'Event retrieved successfully');
     }
 
     /**
@@ -68,14 +74,14 @@ class EventController extends Controller
         $event = Event::findOrFail($id);
         $event->delete();
 
-        return response()->json(null, 204);
+        return $this->success(null, 'Event deleted', 200);
     }
 
     public function register(Event $event)
     {
         $event->increment('registration_count');
 
-        return $event->fresh();
+        return $this->success($event->fresh(), 'Registration successful');
     }
 
     public function cancel(Event $event)
@@ -83,12 +89,12 @@ class EventController extends Controller
         return DB::transaction(function () use ($event) {
             $locked = Event::lockForUpdate()->find($event->id);
             if ($locked->registration_count <= 0) {
-                return response()->json(['error' => 'No registrations to cancel.'], 400);
+                return $this->error('No registrations to cancel.', 400);
             }
 
             $locked->decrement('registration_count');
 
-            return $locked->fresh();
+            return $this->success($locked->fresh(), 'Registration canceled successfully');
         });
     }
 }
