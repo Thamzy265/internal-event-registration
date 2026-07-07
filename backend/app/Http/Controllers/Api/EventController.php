@@ -14,7 +14,11 @@ class EventController extends Controller
      */
     public function index()
     {
-        return Event::orderBy('date')->get();
+        // return response()->json(Event::orderBy('date')->get());
+        return response()->json([
+            'message' => 'Event list retrieved successfully',
+            'data' => Event::orderBy('event_date')->get(),
+        ]);
     }
 
     /**
